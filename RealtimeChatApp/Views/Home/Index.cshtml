@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <div>
+        <input type="text" id="userInput" placeholder="Your name" />
+        <input type="text" id="messageInput" placeholder="Type your message" />
+        <button id="sendButton">Send</button>
+    </div>
+
+    <ul id="messagesList"></ul>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.1/signalr.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/chathub")
+                .build();
+
+            connection.on("ReceiveMessage", (user, message) => {
+                let sentimentLabel = '';
+
+                if (sentiment === "Positive") {
+                    sentimentLabel = "🙂 Positive";
+                } else if (sentiment === "Negative") {
+                    sentimentLabel = "🙁 Negative";
+                } else {
+                    sentimentLabel = "😐 Neutral";
+                }
+
+
+                const msg = `${user}: ${message} [Sentiment: ${sentimentLabel}]`;
+                const li = document.createElement("li");
+                li.textContent = msg;
+
+                // Подсвечивание в зависимости от настроения
+                if (sentiment === "Positive") {
+                    li.style.color = "green";
+                } else if (sentiment === "Negative") {
+                    li.style.color = "red";
+                } else {
+                    li.style.color = "gray";
+                }
+
+                document.getElementById("messagesList").appendChild(li);
+            });
+
+            document.getElementById("sendButton").addEventListener("click", () => {
+                const user = document.getElementById("userInput").value;
+                const message = document.getElementById("messageInput").value;
+                connection.invoke("SendMessage", user, message)
+                    .catch(err => console.error(err.toString()));
+            });
+
+            connection.start()
+                .then(() => console.log("SignalR Connected"))
+                .catch(err => console.error("Error starting SignalR connection:", err.toString()));
+        });
+    </script>
+}
