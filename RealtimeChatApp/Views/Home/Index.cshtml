@@ -2,10 +2,8 @@
     ViewData["Title"] = "Home Page";
 }
 
-
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Realtime chat</h1>
     <div>
         <input type="text" id="userInput" placeholder="Your name" />
         <input type="text" id="messageInput" placeholder="Type your message" />
@@ -23,7 +21,7 @@
                 .withUrl("/chathub")
                 .build();
 
-            connection.on("ReceiveMessage", (user, message) => {
+            connection.on("ReceiveMessage", (user, message, sentiment) => {
                 let sentimentLabel = '';
 
                 if (sentiment === "Positive") {
@@ -33,7 +31,6 @@
                 } else {
                     sentimentLabel = "😐 Neutral";
                 }
-
 
                 const msg = `${user}: ${message} [Sentiment: ${sentimentLabel}]`;
                 const li = document.createElement("li");

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using RealtimeChatApp.Models;
+using RealtimeChatApp.ViewModels;
 using System.Diagnostics;
 
 namespace RealtimeChatApp.Controllers
@@ -14,11 +14,6 @@ namespace RealtimeChatApp.Controllers
 		}
 
 		public IActionResult Index()
-		{
-			return View();
-		}
-
-		public IActionResult Privacy()
 		{
 			return View();
 		}

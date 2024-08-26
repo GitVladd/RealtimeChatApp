@@ -1,56 +1,81 @@
+using Microsoft.EntityFrameworkCore;
+using RealtimeChatApp.Data;
 using RealtimeChatApp.Hubs;
+using RealtimeChatApp.Repository;
 using RealtimeChatApp.Services;
 
 namespace RealtimeChatApp
 {
-	public class Program
-	{
-		public static void Main(string[] args)
-		{
-			var builder = CreateBuilder(args);
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-            builder.Configuration.AddUserSecrets<Program>();
+            ConfigureServices(builder.Services, builder.Configuration);
 
             var app = builder.Build();
 
-			ConfigureApp(app);
+            Configure(app);
 
-			app.Run();
-		}
+            if (app.Environment.IsDevelopment())
+            {
+                CheckDbConnection(app);
+            }
 
-		private static WebApplicationBuilder CreateBuilder(string[] args)
-		{
-			var builder = WebApplication.CreateBuilder(args);
+            app.Run();
+        }
 
-			builder.Services.AddControllersWithViews();
+        private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+            services.AddControllersWithViews();
 
-            builder.Services.AddSingleton(new SentimentAnalysisService("<Your-Endpoint>", "<Your-API-Key>"));
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(configuration["AzureSQLDatabase:ConnectionString"]));
 
-            builder.Services.AddSignalR().AddAzureSignalR(builder.Configuration["AzureSignalRConnectionString"]);
+            services.AddSignalR().AddAzureSignalR(configuration["AzureSignalRService:ConnectionString"]);
 
-            return builder;
-		}
+            services.AddSingleton<ISentimentAnalysisService, SentimentAnalysisService>();
+            services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+        }
 
-		private static void ConfigureApp(WebApplication app)
-		{
-			if (!app.Environment.IsDevelopment())
-			{
-				app.UseExceptionHandler("/Home/Error");
-				app.UseHsts();
-			}
+        private static void Configure(WebApplication app)
+        {
+            if (!app.Environment.IsDevelopment())
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
 
-			app.UseHttpsRedirection();
-			app.UseStaticFiles();
-			app.UseRouting();
-			app.UseAuthorization();
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseAuthorization();
 
-			// Configure endpoints
-			app.MapControllerRoute(
-				name: "default",
-				pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
-			app.MapHub<ChatHub>("/chathub");
-		}
-	}
+            app.MapHub<ChatHub>("/chathub");
+        }
 
+        private static void CheckDbConnection(WebApplication app)
+        {
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                try
+                {
+                    if (!dbContext.Database.CanConnect())
+                    {
+                        throw new Exception("Cannot connect to the database.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Failed to connect to database: {ex.Message}");
+                }
+            }
+        }
+    }
 }
