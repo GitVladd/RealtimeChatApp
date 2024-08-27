@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "signalr1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/RealtimeChatApp20240826120022/providers/Microsoft.ServiceLinker/linkers/AzureSignalRConnectionString_D2C45097DF",
+      "secretStore": "AzureAppSettings",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.SignalRService/SignalR/SignalirService",
+      "type": "signalr.azure",
+      "connectionId": "Azure:SignalR:ConnectionString",
+      "dynamicId": null
+    },
+    "mssql1": {
+      "serviceConnectorResourceId": "/subscriptions/[parameters('subscriptionId')]/resourcegroups/[parameters('resourceGroupName')]/providers/Microsoft.Web/sites/RealtimeChatApp20240826120022/providers/Microsoft.ServiceLinker/linkers/AzureSQLDatabaseConnectionString_1D1082E586",
+      "secretStore": null,
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.Sql/servers/realtime-chat-db-server/databases/RealtimeChatDb",
+      "type": "mssql.azure",
+      "connectionId": "AzureSQLDatabase:ConnectionString",
+      "dynamicId": null
+    }
+  }
+}

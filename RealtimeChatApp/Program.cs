@@ -1,3 +1,5 @@
+using Azure.Core.Diagnostics;
+using Azure.Identity;
 using Microsoft.EntityFrameworkCore;
 using RealtimeChatApp.Data;
 using RealtimeChatApp.Hubs;
@@ -30,10 +32,22 @@ namespace RealtimeChatApp
         {
             services.AddControllersWithViews();
 
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(configuration["AzureSQLDatabase:ConnectionString"]));
+            var sqlConnectionString = configuration["AzureSQLDatabase:ConnectionString"];
+            if (string.IsNullOrEmpty(sqlConnectionString))
+            {
+                throw new InvalidOperationException("AzureSQLDatabase:ConnectionString configuration is missing.");
+            }
 
-            services.AddSignalR().AddAzureSignalR(configuration["AzureSignalRService:ConnectionString"]);
+            services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(sqlConnectionString));
+
+            var signalRConnectionString = configuration["AzureSignalRService:ConnectionString"];
+            if (string.IsNullOrEmpty(signalRConnectionString))
+            {
+                throw new InvalidOperationException("AzureSignalRService:ConnectionString configuration is missing.");
+            }
+
+            services.AddSignalR().AddAzureSignalR(signalRConnectionString);
 
             services.AddSingleton<ISentimentAnalysisService, SentimentAnalysisService>();
             services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
@@ -41,7 +55,11 @@ namespace RealtimeChatApp
 
         private static void Configure(WebApplication app)
         {
-            if (!app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+            }
+            else
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
