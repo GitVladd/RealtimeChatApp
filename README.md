@@ -36,6 +36,9 @@ This project is a real-time chat application built using ASP.NET Core, SignalR, 
    - Build the project: `dotnet build`
    - Run the project: `dotnet run`
 
-5. **Deploy to Azure**:
+5. **Apply migrations**:
+   - `dotnet ef database update`
+
+6. **Deploy to Azure**:
    - Follow the Azure deployment guidelines to publish the app.
 
